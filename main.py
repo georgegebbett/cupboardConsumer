@@ -24,7 +24,7 @@ items = json.loads(itemRes.content)
 print(items)
 
 
-class HomeController(tk.Tk):
+class CupboardConsumer(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -109,6 +109,7 @@ class QuantityPage(tk.Frame):
         self.quantity = tk.StringVar()
         self.itemId = tk.StringVar()
         self.itemName = tk.StringVar()
+        self.quantityChanged = tk.BooleanVar()
 
         label = tk.Label(self, textvariable=self.quantity, font=LARGE_FONT)
         label.grid(column=0, row=0, sticky='EW', columnspan=3)
@@ -162,8 +163,9 @@ class QuantityPage(tk.Frame):
         button.grid(column=0, row=5, sticky="NSEW", columnspan=3)
 
     def appendToQuantity(self, quant):
-        if self.quantity.get() == "1":
+        if not self.quantityChanged.get():
             self.quantity.set(quant)
+            self.quantityChanged.set(True)
         else:
             self.quantity.set(self.quantity.get() + quant)
 
@@ -213,6 +215,7 @@ class ConsumeResultPage(tk.Frame):
 def openQuantityPage(item, controller):
     print("quantity for", item['name'])
     app.frames[QuantityPage].quantity.set(item["quick_consume_amount"])
+    app.frames[QuantityPage].quantityChanged.set(False)
     app.frames[QuantityPage].itemId.set(item["id"])
     app.frames[QuantityPage].itemName.set(item["name"])
     controller.show_frame(QuantityPage)
@@ -228,6 +231,6 @@ def openResultPage(item, quantity, success, controller):
     controller.show_frame(ConsumeResultPage)
 
 
-app = HomeController()
+app = CupboardConsumer()
 
 app.mainloop()
