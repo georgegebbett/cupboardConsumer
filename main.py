@@ -7,7 +7,7 @@ import requests
 
 # open and read the config file
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('/home/pi/cupboardConsumer/config.ini')
 
 # set Grocy variables
 grocyApiUrl = config['grocy']['apiBaseURL']
