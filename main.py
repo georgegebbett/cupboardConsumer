@@ -173,11 +173,11 @@ class QuantityPage(tk.Frame):
         self.quantity.set(self.quantity.get()[0:-1])
 
     def doConsume(self, itemId, itemName):
-        data = {
+        data = json.dumps({
             "amount": self.quantity.get(),
             "transaction_type": "consume",
-            "spoiled": "false"
-        }
+            "spoiled": False
+        })
         consumeRes = requests.post(grocyApiUrl + "stock/products/" + itemId + "/consume", headers=headers, data=data)
         if consumeRes.status_code == 200:
             openResultPage(itemName, self.quantity.get(), True, self.controller)
