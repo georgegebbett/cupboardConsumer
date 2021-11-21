@@ -1,23 +1,29 @@
-import time
 import tkinter as tk
-import configparser
 import json
-import os
 import requests
+import yaml
 
 # open and read the config file
-config = configparser.ConfigParser()
-config.read('/home/pi/cupboardConsumer/config.ini')
+with open('/home/pi/cupboardConsumer/config.yaml', 'r') as config:
+    try:
+        options = yaml.safe_load(config)
+    except yaml.YAMLError as err:
+        print(err)
 
 # set Grocy variables
-grocyApiUrl = config['grocy']['apiBaseURL']
-grocyApiKey = config['grocy']['apiKey']
+grocyApiUrl = options['apiBaseURL']
+grocyApiKey = options['apiKey']
+excludedItems = options['excludedItems']
+cupboardLocation = options['cupboardLocationId']
 
-runFullscreen = config.getboolean('general', 'fullscreen')
+# Other misc variables
+runFullscreen = options['fullscreen']
 LARGE_FONT = ("Verdana", 25)
 
+# Get the items from Grocy
 headers = {'GROCY-API-KEY': grocyApiKey}
-itemRes = requests.get(grocyApiUrl + "objects/products?query%5B%5D=location_id%3D6", headers=headers)
+itemRes = requests.get(grocyApiUrl + "objects/products?query%5B%5D=location_id%3D" + str(cupboardLocation),
+                       headers=headers)
 
 items = json.loads(itemRes.content)
 
@@ -64,12 +70,9 @@ class SplashScreen(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-        # self.grid_rowconfigure(2, weight=1)
 
         label = tk.Label(self, text="Cupboard Consumer\nLoading...", font=LARGE_FONT)
         label.grid(column=0, row=0, sticky='NSEW')
-
-        # controller.show_frame(StartPage)
 
 
 class ItemsPage(tk.Frame):
@@ -82,6 +85,10 @@ class ItemsPage(tk.Frame):
 
         i = 0
         for item in items:
+
+            if item['id'] in excludedItems:
+                continue
+
             button = tk.Button(self, text=item['name'], font=LARGE_FONT, wraplength='140',
                                command=lambda itemRef=item: openQuantityPage(itemRef, controller))
             setattr(button, 'id', item['id'])
@@ -90,7 +97,6 @@ class ItemsPage(tk.Frame):
             self.grid_rowconfigure(int(i / 2) + 1, weight=1)
 
             i += 1
-
 
 
 class QuantityPage(tk.Frame):
@@ -170,7 +176,7 @@ class QuantityPage(tk.Frame):
             self.quantity.set(self.quantity.get() + quant)
 
     def backspaceQuantity(self):
-        if self.quantity.get() == "":
+        if not self.quantityChanged.get() or self.quantity.get() == "":
             self.controller.show_frame(ItemsPage)
         self.quantity.set(self.quantity.get()[0:-1])
 
@@ -185,8 +191,8 @@ class QuantityPage(tk.Frame):
             "transaction_type": "consume",
             "spoiled": False
         })
-        print(data)
-        consumeRes = requests.post(grocyApiUrl + "stock/products/" + itemId + "/consume", headers=consumeHeaders, data=data)
+        consumeRes = requests.post(grocyApiUrl + "stock/products/" + itemId + "/consume", headers=consumeHeaders,
+                                   data=data)
         if consumeRes.status_code == 200:
             openResultPage(itemName, self.quantity.get(), True, self.controller)
         else:
@@ -213,7 +219,6 @@ class ConsumeResultPage(tk.Frame):
 
 
 def openQuantityPage(item, controller):
-    print("quantity for", item['name'])
     app.frames[QuantityPage].quantity.set(item["quick_consume_amount"])
     app.frames[QuantityPage].quantityChanged.set(False)
     app.frames[QuantityPage].itemId.set(item["id"])
