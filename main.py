@@ -7,7 +7,7 @@ import requests
 
 # open and read the config file
 config = configparser.ConfigParser()
-config.read('/home/pi/cupboardConsumer/config.ini')
+config.read('./config.ini')
 
 # set Grocy variables
 grocyApiUrl = config['grocy']['apiBaseURL']
@@ -173,12 +173,18 @@ class QuantityPage(tk.Frame):
         self.quantity.set(self.quantity.get()[0:-1])
 
     def doConsume(self, itemId, itemName):
+        consumeHeaders = {
+            'GROCY-API-KEY': grocyApiKey,
+            'Content-Type': 'application/json'
+        }
+
         data = json.dumps({
             "amount": self.quantity.get(),
             "transaction_type": "consume",
             "spoiled": False
         })
-        consumeRes = requests.post(grocyApiUrl + "stock/products/" + itemId + "/consume", headers=headers, data=data)
+        print(data);
+        consumeRes = requests.post(grocyApiUrl + "stock/products/" + itemId + "/consume", headers=consumeHeaders, data=data)
         if consumeRes.status_code == 200:
             openResultPage(itemName, self.quantity.get(), True, self.controller)
         else:
