@@ -183,7 +183,7 @@ class QuantityPage(tk.Frame):
             "transaction_type": "consume",
             "spoiled": False
         })
-        print(data);
+        print(data)
         consumeRes = requests.post(grocyApiUrl + "stock/products/" + itemId + "/consume", headers=consumeHeaders, data=data)
         if consumeRes.status_code == 200:
             openResultPage(itemName, self.quantity.get(), True, self.controller)
