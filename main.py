@@ -157,7 +157,7 @@ class QuantityPage(tk.Frame):
                            command=lambda: self.backspaceQuantity())
         button.grid(column=1, row=4, sticky="NSEW", columnspan=2)
 
-        button = tk.Button(self, text="Consume", wraplength='140', font=LARGE_FONT,
+        button = tk.Button(self, text="Consume", wraplength='320', font=LARGE_FONT,
                            command=lambda: self.doConsume(self.itemId.get(), self.itemName.get()))
         button.grid(column=0, row=5, sticky="NSEW", columnspan=3)
 
