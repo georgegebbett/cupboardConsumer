@@ -210,8 +210,8 @@ class ConsumeResultPage(tk.Frame):
         self.success = tk.BooleanVar()
         self.message = tk.StringVar()
 
-        label = tk.Label(self, textvariable=self.message, font=LARGE_FONT, wraplength='320')
-        label.grid(column=0, row=0, sticky='NSEW')
+        self.label = tk.Label(self, textvariable=self.message, font=LARGE_FONT, wraplength='320')
+        self.label.grid(column=0, row=0, sticky='NSEW')
 
         button = tk.Button(self, text="OK", wraplength='320', font=LARGE_FONT,
                            command=lambda: controller.show_frame(ItemsPage))
@@ -230,8 +230,11 @@ def openResultPage(item, quantity, success, controller):
     app.frames[ConsumeResultPage].success.set(success)
     if success:
         app.frames[ConsumeResultPage].message.set("Successfully consumed " + quantity + " of " + item)
+        app.frames[ConsumeResultPage].label.config(bg="GREEN")
     else:
         app.frames[ConsumeResultPage].message.set("Error during consumption\n" + item)
+        app.frames[ConsumeResultPage].label.config(bg="RED")
+
 
     controller.show_frame(ConsumeResultPage)
 
