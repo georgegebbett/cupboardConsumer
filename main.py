@@ -206,16 +206,11 @@ class ConsumeResultPage(tk.Frame):
         self.controller = controller
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)
         self.success = tk.BooleanVar()
         self.message = tk.StringVar()
 
         self.label = tk.Label(self, textvariable=self.message, font=LARGE_FONT, wraplength='320')
         self.label.grid(column=0, row=0, sticky='NSEW')
-
-        button = tk.Button(self, text="OK", wraplength='320', font=LARGE_FONT,
-                           command=lambda: controller.show_frame(ItemsPage))
-        button.grid(column=0, row=1, sticky="NSEW")
 
 
 def openQuantityPage(item, controller):
@@ -237,6 +232,8 @@ def openResultPage(item, quantity, success, controller):
 
 
     controller.show_frame(ConsumeResultPage)
+
+    controller.after(2500, controller.show_frame, ItemsPage)
 
 
 app = CupboardConsumer()
