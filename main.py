@@ -1,10 +1,19 @@
+import re
 import tkinter as tk
 import json
 import requests
 import yaml
 
 # open and read the config file
-with open('/home/pi/cupboardConsumer/config.yaml', 'r') as config:
+
+test_mode = True
+
+if test_mode:
+    yaml_path = "./config.yaml"
+else:
+    yaml_path = '/home/pi/cupboardConsumer/config.yaml'
+
+with open(yaml_path, 'r') as config:
     try:
         options = yaml.safe_load(config)
     except yaml.YAMLError as err:
@@ -193,11 +202,14 @@ class QuantityPage(tk.Frame):
         })
         consumeRes = requests.post(grocyApiUrl + "stock/products/" + itemId + "/consume", headers=consumeHeaders,
                                    data=data)
+
         if consumeRes.status_code == 200:
             openResultPage(itemName, self.quantity.get(), True, self.controller)
         else:
-            openResultPage(json.loads(consumeRes.text)["error_message"], self.quantity.get(), False, self.controller)
-
+            try:
+                openResultPage(json.loads(consumeRes.text)["error_message"], self.quantity.get(), False, self.controller)
+            except:
+                openResultPage("Generic Error", "NaN", False, self.controller)
 
 class ConsumeResultPage(tk.Frame):
 
@@ -214,7 +226,12 @@ class ConsumeResultPage(tk.Frame):
 
 
 def openQuantityPage(item, controller):
-    app.frames[QuantityPage].quantity.set(item["quick_consume_amount"])
+
+    integer_quantity = re.findall("(\\d+).", item["quick_consume_amount"])[0]
+
+    print(integer_quantity)
+
+    app.frames[QuantityPage].quantity.set(integer_quantity)
     app.frames[QuantityPage].quantityChanged.set(False)
     app.frames[QuantityPage].itemId.set(item["id"])
     app.frames[QuantityPage].itemName.set(item["name"])
@@ -229,7 +246,6 @@ def openResultPage(item, quantity, success, controller):
     else:
         app.frames[ConsumeResultPage].message.set("Error during consumption\n" + item)
         app.frames[ConsumeResultPage].label.config(bg="RED")
-
 
     controller.show_frame(ConsumeResultPage)
 
